@@ -1,0 +1,12 @@
+Topics voor MQTT server:
+
+TI-14-2019/A3/GPSCoordinaten
+TI-14-2019/A3/MascotteKnoppen
+
+JSON formaat en voorbeeld:
+GPS tracker:
+{"Coordinaat":{"id":, "latitude":,"longitude":}}
+bv: {"Coordinaat":{"id":Henk,"latitude":51.589321,"longitude":4.774480}}
+Update knop:
+{"Mascotte":{"id":}}
+bv: {"Mascotte":{"id":Henk}}
