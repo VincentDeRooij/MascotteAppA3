@@ -26,13 +26,13 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include "WiFi.h"
-
+//testcode
 const char *ssid = "eduroam";
 const char* username = "scolijn3@avans.nl";
 const char *password = "";
 
 const char* mqtt_broker   = "51.254.217.43";
-const char* mqtt_topic    = "TI-14-2019/LED";
+const char* mqtt_topic    = "TI-14-2019/A3/GPSCoordinaten";
 const char* mqtt_username = "emon";
 const char* mqtt_password = "uw2ELjAKrEUwqgLT";
 
@@ -88,10 +88,10 @@ Version:  DMK, Initial code
   
     // Publish payload is BTN is pressed
    
-      mqtt_pubish(
-        random(100, 255), // Red value
-        random(100, 255), // Green value
-        random(100, 255)  // Blue value
+      mqtt_publish(
+        "2", // id String
+        random(0, 179.99), // latitude value
+        random(0, 179.99)  // longitude value
       );
       delay(200);
     
@@ -136,21 +136,21 @@ Version :   DMK, Initial code
 }
 
 /******************************************************************/
-void mqtt_pubish(int r, int g, int b)
+void mqtt_publish(String id, double latitude, double longitude)
 /* 
 short:      Pulish on MQTT topic (UNSECURE)
-inputs:        
+inputs:     mascotte id, latitude from gps, longitude from gps
 outputs: 
 notes:         
-Version :   DMK, Initial code
+Version :   1.0, Initial code
 *******************************************************************/
 {
   DynamicJsonDocument jsonDocument(1024);
 
-  JsonObject colors = jsonDocument.createNestedObject("ledColor");
-  colors["r"] = r;
-  colors["g"] = g;
-  colors["b"] = b;
+  JsonObject info = jsonDocument.createNestedObject("Coordinaat");
+  info["id"] = id;
+  info["latitude"] = latitude;
+  info["longitude"] = longitude;
 
   char json[1024];
   serializeJson(jsonDocument, json);
@@ -158,7 +158,6 @@ Version :   DMK, Initial code
   mqttClient.publish(mqtt_topic, json);
 }
 
-/******************************************************************/
 void mqtt_callback(char* topic, byte* payload, unsigned int length)
 /* 
 short:    MQTT callback. Elke publish op subscibed topic wordt hier
@@ -176,7 +175,7 @@ Version:  DMK, Initial code
     DynamicJsonDocument jsonDocument(1024);
     DeserializationError error = deserializeJson(jsonDocument, payload);
     if( !error ) {
-      JsonVariant msg = jsonDocument["ledColor"];
+      JsonVariant msg = jsonDocument["Coordinaat"];
       if(!msg.isNull()) {
         // Flits de blauwe led
         delay(50);
