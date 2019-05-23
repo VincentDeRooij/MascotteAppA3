@@ -1,4 +1,4 @@
-package com.example.mascotteappa3.CameraActivityPackage.Camera;
+package com.example.mascotteappa3.MascotApp.Camera;
 
 import android.Manifest;
 import android.content.Intent;

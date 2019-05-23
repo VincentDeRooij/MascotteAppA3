@@ -6,9 +6,6 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-    // currently to use the second activity you have to switch the activity, the most above activity is the one which gets activated first
-    // the other one(s) must be activated using intents
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -16,15 +13,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-                <activity android:name=".CameraActivityPackage.Camera.CameraActivity"/>
-                    <activity android:name=".CameraActivityPackage.MapView.MapActivity">
+                <activity android:name=".MascotApp.Camera.CameraActivity"/>
+                    <activity android:name=".MascotApp.MapView.MapActivity">
                     <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
 
         <provider
             android:name="android.support.v4.content.FileProvider"
