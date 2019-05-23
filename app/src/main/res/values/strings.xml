@@ -3,4 +3,9 @@
     <string name="acces_token">pk.eyJ1IjoidndqYXBkZXJvb2lqIiwiYSI6ImNqdnFmMXE1djA4YTM0OHA5NWlzbnhnZmoifQ.2mkQ_OkllaF9EF2VtqMQNA</string>
     <string name="navigation_drawer_open">1</string>
     <string name="navigation_drawer_close">0</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="take_picture">Take Picture</string>
 </resources>
