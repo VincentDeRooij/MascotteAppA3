@@ -23,7 +23,7 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
-public class MainActivity extends AppCompatActivity {
+public class MapActivity extends AppCompatActivity {
 
     private MapView mapView;
 
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
                         // Add the marker image to map
 //                        style.addImage("marker-icon-id",
 //                                BitmapFactory.decodeResource(
-//                                        MainActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));
+//                                        MapActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));
 //
 //                        SymbolLayer symbolLayer = new SymbolLayer("layer-id", "source-id");
 //                        SymbolLayer symbolLayer2 = new SymbolLayer("layer-id2", "source-id2");
