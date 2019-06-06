@@ -96,6 +96,7 @@
 
     </android.support.constraint.ConstraintLayout>
 
+
     <include
         layout="@layout/app_bar_main"
         android:layout_width="match_parent"
@@ -112,8 +113,5 @@
         app:menu="@menu/menu" >
 
     </android.support.design.widget.NavigationView>
-
-
-
 
 </android.support.v4.widget.DrawerLayout>
