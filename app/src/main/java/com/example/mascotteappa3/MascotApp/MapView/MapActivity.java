@@ -1,8 +1,10 @@
 package com.example.mascotteappa3.MascotApp.MapView;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -15,9 +17,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.mascotteappa3.MascotApp.Camera.CameraActivity;
+import com.example.mascotteappa3.MascotApp.MQTT.MQTTConfig;
+import com.example.mascotteappa3.MascotApp.MQTT.MqttMessageService;
+import com.example.mascotteappa3.MascotApp.MQTT.PahoMqttClient;
 import com.example.mascotteappa3.MascotApp.Sensors.GPSTracker;
 import com.example.mascotteappa3.R;
 import com.mapbox.mapboxsdk.Mapbox;
@@ -26,6 +33,11 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MapActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private MapView mapView;
@@ -33,6 +45,11 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
     private ActionBarDrawerToggle toggle;
     private GPSTracker gps = new GPSTracker();
     private Context mContext; // necessary for the GPS tracker to function
+    private MqttAndroidClient client;
+    private PahoMqttClient pahoMqttClient;
+    private MyBroadcastReceiver myBroadCastReceiver;
+    public static final String BROADCAST_ACTION = "com.appsfromholland.mqttpayloadavailabe";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +57,7 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
 
         // This till
         mContext = this;
-
+        Log.d("Main", "Main started");
         if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MapActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 
@@ -112,6 +129,89 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
                 });
             }
         });
+
+        setupMQTT();
+    }
+
+
+    protected void setupMQTT() {
+        Toast.makeText(this,"Testmessage",Toast.LENGTH_LONG).show();
+        Log.d("SEtupMQTT", "SetupMQTT");
+
+        pahoMqttClient = new PahoMqttClient();
+        client = pahoMqttClient.getMqttClient(
+                getApplicationContext(),
+                MQTTConfig.getInstance().MQTT_BROKER_URL(),
+                MQTTConfig.getInstance().CLIENT_ID());
+
+
+
+        // Setup Broadcast receiver
+        myBroadCastReceiver = new MyBroadcastReceiver();
+
+        // Start Broadcast receiver
+        try
+        {
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(BROADCAST_ACTION);
+            registerReceiver(myBroadCastReceiver, intentFilter);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+/*
+        try {
+            pahoMqttClient.subscribe(client, MQTTConfig.getInstance().PUBLISH_TOPIC(), 0);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+*/
+
+
+
+        // Start services
+        try {
+            Intent intent = new Intent(MapActivity.this, MqttMessageService.class);
+            startService(intent);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+
+
+    }
+
+    // Defineer een eigen broadcast receiver, deze vangt alles op voor
+    public class MyBroadcastReceiver extends BroadcastReceiver {
+
+        private final String TAG = "MyBroadcastReceiver";
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("Test", "Test");
+            try
+            {
+                String payload = intent.getStringExtra("payload");
+                Log.i(TAG,  payload);
+
+                try {
+                    JSONObject jsonObject = new JSONObject(payload);
+                    int red = jsonObject.getJSONObject("ledColor").getInt("r");
+                    int green = jsonObject.getJSONObject("ledColor").getInt("g");
+                    int blue = jsonObject.getJSONObject("ledColor").getInt("b");
+
+                    //layout.setBackgroundColor( Color.rgb(red, green, blue) );
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            } catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
     }
 
     @Override
