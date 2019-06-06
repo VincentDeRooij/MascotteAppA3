@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    tools:context="com.example.mascotteappa3.MascotApp.Camera.CameraActivity">
+
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="280dp"
+        android:layout_height="404dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="Welkom bij Mascottefinder, deze app zal je helpen met het vinden van elke mascotte in het park. Met de ingebouwde camera functie kan je samen met al je favoriete mascotte's een foto maken.
+Welke mascotte je wil vinden kun je selecteren op het scherm aan de linker kant, deze mascotte zullen dan op de kaart met een gekleurd icoontje getoond worden.
+Als je een foto neemt wordt deze opgeslagen in de galerij. Nadat je al de mascotte in het park hebt gevonden kun je bij de balie bij de ingang een prijs ophalen."
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</android.support.constraint.ConstraintLayout>
