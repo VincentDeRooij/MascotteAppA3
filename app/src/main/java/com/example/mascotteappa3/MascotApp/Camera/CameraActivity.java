@@ -36,6 +36,7 @@ public class CameraActivity extends AppCompatActivity {
     String pathToFile;
     Integer count;
     boolean started = true;
+    Bitmap bitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,11 +76,15 @@ public class CameraActivity extends AppCompatActivity {
             imageView3 = findViewById(R.id.image3);
             imageView3.setImageBitmap(SaveImages.getInstance().getBitmap3());
         }
-
-
-
     }
 
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(pathToFile);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
+    }
 
 
     @Override
@@ -87,9 +92,8 @@ public class CameraActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK){
             if(requestCode == 1){
-                Bitmap bitmap = BitmapFactory.decodeFile(pathToFile);
+                bitmap = BitmapFactory.decodeFile(pathToFile);
                 setImageView(bitmap);
-
             }
         }
     }
@@ -126,18 +130,22 @@ public class CameraActivity extends AppCompatActivity {
         if(count == 0){
             SaveImages.getInstance().setBitmap(bitmap);
             imageView.setImageBitmap(bitmap);
-            count++;
+            galleryAddPic();
+                count++;
         }else if(count == 1){
             SaveImages.getInstance().setBitmap1(bitmap);
             imageView1.setImageBitmap(bitmap);
+            galleryAddPic();
             count++;
         }else if(count == 2){
             SaveImages.getInstance().setBitmap2(bitmap);
             imageView2.setImageBitmap(bitmap);
+            galleryAddPic();
             count++;
         }else if(count ==3){
             SaveImages.getInstance().setBitmap3(bitmap);
             imageView3.setImageBitmap(bitmap);
+            galleryAddPic();
             count = 0;
         }
         SaveImages.getInstance().setCount(count);
