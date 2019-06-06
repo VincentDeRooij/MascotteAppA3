@@ -16,7 +16,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MascotApp.Sensors.GPSTracker"></activity>
         <activity android:name=".MascotApp.Camera.CameraActivity" />
         <activity android:name=".MascotApp.MapView.MapActivity">
             <intent-filter>
