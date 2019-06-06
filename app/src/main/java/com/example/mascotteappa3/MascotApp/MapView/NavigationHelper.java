@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
+import com.example.mascotteappa3.MascotApp.Sensors.GPSTracker;
+import com.example.mascotteappa3.MascotApp.Camera.CameraActivity;
 import com.example.mascotteappa3.R;
 
 public class NavigationHelper {
@@ -20,9 +22,8 @@ public class NavigationHelper {
             intent = new Intent(activity, MapActivity.class);
         }
         if(menuItem.getItemId() == R.id.nav_item_pictures) {
-            intent = new Intent(activity, MapActivity.class);
+            intent = new Intent(activity, CameraActivity.class);
         }
-
         return intent;
     }
 
