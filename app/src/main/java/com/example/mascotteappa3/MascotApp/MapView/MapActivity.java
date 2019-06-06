@@ -2,6 +2,7 @@ package com.example.mascotteappa3.MascotApp.MapView;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,7 +11,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 
 import com.example.mascotteappa3.R;
 import com.mapbox.mapboxsdk.Mapbox;
@@ -25,6 +29,14 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
     private MapView mapView;
     private DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
+    private ImageView img1 = null;
+    private ImageView img2 = null;
+    private ImageView img3 = null;
+    private ImageView img4 = null;
+    private boolean rood = true;
+    private boolean blauw = true;
+    private boolean groen = true;
+    private boolean geel = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +45,55 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
         Mapbox.getInstance(this, getString(R.string.acces_token));
 
         setContentView(R.layout.activity_map);
+
+        img1 = findViewById(R.id.mascotte1);
+        img1.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                if(rood) {
+                    img1.setImageResource(R.drawable.mascotterood);
+                }
+                else{
+                    img1.setImageResource(R.drawable.mascotteg);
+                }
+                rood = !rood;
+            }
+        });
+        img2 = findViewById(R.id.mascotte2);
+        img2.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                if(blauw) {
+                    img2.setImageResource(R.drawable.mascotteblauw);
+                }
+                else{
+                    img2.setImageResource(R.drawable.mascotteg);
+                }
+                blauw = !blauw;
+            }
+        });
+        img3 = findViewById(R.id.mascotte3);
+        img3.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                if(groen) {
+                    img3.setImageResource(R.drawable.mascottegroen);
+                }
+                else{
+                    img3.setImageResource(R.drawable.mascotteg);
+                }
+                groen = !groen;
+            }
+        });
+        img4 = findViewById(R.id.mascotte4);
+        img4.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                if(geel) {
+                    img4.setImageResource(R.drawable.mascottegeel);
+                }
+                else{
+                    img4.setImageResource(R.drawable.mascotteg);
+                }
+                geel = !geel;
+            }
+        });
 
         Toolbar toolbar = findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
@@ -58,7 +119,7 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
 
-                        // Add the marker image to map
+                        //Add the marker image to map
 //                        style.addImage("marker-icon-id",
 //                                BitmapFactory.decodeResource(
 //                                        MapActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));

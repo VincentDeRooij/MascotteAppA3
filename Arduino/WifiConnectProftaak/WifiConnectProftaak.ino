@@ -28,8 +28,8 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "WiFi.h"
 //testcode
 const char *ssid = "eduroam";
-const char* username = "scolijn3@avans.nl";
-const char *password = "";
+const char* username = "tvelden5@avans.nl";
+const char *password = "Noordbrabant1";
 
 const char* mqtt_broker   = "51.254.217.43";
 const char* mqtt_topic    = "TI-14-2019/A3/GPSCoordinaten";

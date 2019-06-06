@@ -13,38 +13,107 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <com.mapbox.mapboxsdk.maps.MapView
-        android:id="@+id/mapView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        mapbox:layout_constraintBottom_toBottomOf="parent"
-        mapbox:layout_constraintEnd_toEndOf="parent"
-        mapbox:layout_constraintHorizontal_bias="0.0"
-        mapbox:layout_constraintStart_toStartOf="parent"
-        mapbox:layout_constraintTop_toTopOf="parent"
-        mapbox:layout_constraintVertical_bias="0.0"
-        mapbox:mapbox_cameraTargetLat="51.585676"
-        mapbox:mapbox_cameraTargetLng="4.793485"
-        mapbox:mapbox_cameraTilt="0"
-        mapbox:mapbox_cameraZoom="16" />
+        <com.mapbox.mapboxsdk.maps.MapView
+            android:id="@+id/mapView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clickable="true"
+            mapbox:layout_constraintBottom_toBottomOf="parent"
+            mapbox:layout_constraintEnd_toEndOf="parent"
+            mapbox:layout_constraintHorizontal_bias="1.0"
+            mapbox:layout_constraintStart_toStartOf="parent"
+            mapbox:layout_constraintTop_toTopOf="parent"
+            mapbox:layout_constraintVertical_bias="0.0"
+            mapbox:mapbox_cameraTargetLat="51.585676"
+            mapbox:mapbox_cameraTargetLng="4.793485"
+            mapbox:mapbox_cameraTilt="0"
+            mapbox:mapbox_cameraZoom="16">
 
-</android.support.constraint.ConstraintLayout>
+        </com.mapbox.mapboxsdk.maps.MapView>
 
-<include
-    layout="@layout/app_bar_main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" />
 
-<android.support.design.widget.NavigationView
-    android:id="@+id/nav_view"
-    android:layout_width="wrap_content"
-    android:layout_height="match_parent"
-    android:layout_gravity="start"
-    android:background="@color/colorPrimary"
-    app:headerLayout="@layout/nav_header_main"
-    app:itemTextColor="@color/colorPrimaryDark"
-    app:menu="@menu/menu" >
+        <ImageView
+            android:id="@+id/mascotte1"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            app:srcCompat="@drawable/mascotteg"
+            mapbox:layout_constraintEnd_toEndOf="parent"
+            mapbox:layout_constraintHorizontal_bias="0.0"
+            mapbox:layout_constraintStart_toStartOf="parent"
+            mapbox:layout_constraintTop_toTopOf="@+id/guideline7" />
 
-</android.support.design.widget.NavigationView>
+        <ImageView
+            android:id="@+id/mascotte2"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            app:srcCompat="@drawable/mascotteg"
+            mapbox:layout_constraintEnd_toEndOf="parent"
+            mapbox:layout_constraintHorizontal_bias="0.0"
+            mapbox:layout_constraintStart_toStartOf="parent"
+            mapbox:layout_constraintTop_toBottomOf="@+id/mascotte1" />
+
+        <ImageView
+            android:id="@+id/mascotte3"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            app:srcCompat="@drawable/mascotteg"
+            mapbox:layout_constraintEnd_toEndOf="parent"
+            mapbox:layout_constraintHorizontal_bias="0.0"
+            mapbox:layout_constraintStart_toStartOf="parent"
+            mapbox:layout_constraintTop_toBottomOf="@+id/mascotte2" />
+
+        <ImageView
+            android:id="@+id/mascotte4"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            app:srcCompat="@drawable/mascotteg"
+            mapbox:layout_constraintEnd_toEndOf="parent"
+            mapbox:layout_constraintHorizontal_bias="0.0"
+            mapbox:layout_constraintStart_toStartOf="parent"
+            mapbox:layout_constraintTop_toBottomOf="@+id/mascotte3" />
+
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            mapbox:layout_constraintGuide_percent="0.1" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <include
+        layout="@layout/app_bar_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/colorPrimary"
+        app:headerLayout="@layout/nav_header_main"
+        app:itemTextColor="@color/colorPrimaryDark"
+        app:menu="@menu/menu" >
+
+    </android.support.design.widget.NavigationView>
+
+
+
 
 </android.support.v4.widget.DrawerLayout>
