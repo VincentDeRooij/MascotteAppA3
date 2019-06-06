@@ -19,14 +19,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
-import com.example.mascotteappa3.MascotApp.Camera.CameraActivity;
 import com.example.mascotteappa3.MascotApp.MQTT.MQTTConfig;
 import com.example.mascotteappa3.MascotApp.MQTT.MqttMessageService;
 import com.example.mascotteappa3.MascotApp.MQTT.PahoMqttClient;
 import com.example.mascotteappa3.MascotApp.Sensors.GPSTracker;
 import com.example.mascotteappa3.R;
+import com.google.gson.JsonObject;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -37,6 +39,9 @@ import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MapActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -49,6 +54,8 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
     private PahoMqttClient pahoMqttClient;
     private MyBroadcastReceiver myBroadCastReceiver;
     public static final String BROADCAST_ACTION = "com.appsfromholland.mqttpayloadavailabe";
+    public Map lastCoordinates;
+    private Button reconnectButton;
 
 
     @Override
@@ -130,20 +137,20 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
             }
         });
 
+        lastCoordinates = new HashMap<String, JsonObject>();
         setupMQTT();
     }
 
 
     protected void setupMQTT() {
         Toast.makeText(this,"Testmessage",Toast.LENGTH_LONG).show();
-        Log.d("SEtupMQTT", "SetupMQTT");
+        Log.d("SetupMQTT", "SetupMQTT");
 
         pahoMqttClient = new PahoMqttClient();
         client = pahoMqttClient.getMqttClient(
                 getApplicationContext(),
                 MQTTConfig.getInstance().MQTT_BROKER_URL(),
                 MQTTConfig.getInstance().CLIENT_ID());
-
 
 
         // Setup Broadcast receiver
@@ -161,13 +168,33 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
             e.printStackTrace();
         }
 
-/*
-        try {
-            pahoMqttClient.subscribe(client, MQTTConfig.getInstance().PUBLISH_TOPIC(), 0);
+
+        reconnectButton = findViewById(R.id.reconnectButton);
+        reconnectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    pahoMqttClient.subscribe(client, MQTTConfig.getInstance().PUBLISH_TOPIC(), 0);
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+ /*       try {
+            Log.d("Trying to subscribe", "");
+
+            if (client.isConnected()) {
+                pahoMqttClient.subscribe(client, MQTTConfig.getInstance().PUBLISH_TOPIC(), 0);
+            }
+            else
+            {
+                Log.d("Error", "no connection");
+            }
         } catch (MqttException e) {
             e.printStackTrace();
-        }
-*/
+        }*/
+
 
 
 
@@ -189,7 +216,6 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
         private final String TAG = "MyBroadcastReceiver";
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("Test", "Test");
             try
             {
                 String payload = intent.getStringExtra("payload");
@@ -197,12 +223,17 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
 
                 try {
                     JSONObject jsonObject = new JSONObject(payload);
-                    int red = jsonObject.getJSONObject("ledColor").getInt("r");
-                    int green = jsonObject.getJSONObject("ledColor").getInt("g");
-                    int blue = jsonObject.getJSONObject("ledColor").getInt("b");
+                    if (jsonObject.has("Coordinaat"))
+                    {
+                        Log.d("Type received", "Coordinaat");
+                        lastCoordinates.put(jsonObject.getJSONObject("Coordinaat").get("id"),jsonObject);
+                    }
+                    else if (jsonObject.has("Mascotte"))
+                    {
+                        Log.d("Type received", "Mascotteknop");
+                        //TODO: Tell map to show the currently stored coordinate for that mascot
 
-                    //layout.setBackgroundColor( Color.rgb(red, green, blue) );
-
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
