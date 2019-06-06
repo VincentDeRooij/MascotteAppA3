@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,11 +22,16 @@ import android.widget.Toast;
 
 import com.example.mascotteappa3.MascotApp.Sensors.GPSTracker;
 import com.example.mascotteappa3.R;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 public class MapActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -47,6 +54,7 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
         } else {
             Toast.makeText(mContext,"You need have granted permission",Toast.LENGTH_SHORT).show();
             gps = new GPSTracker(mContext, MapActivity.this);
+
 
             // Check if GPS enabled
             if (gps.canGetLocation()) {
@@ -93,21 +101,20 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
 
-                        // Add the marker image to map
-//                        style.addImage("marker-icon-id",
-//                                BitmapFactory.decodeResource(
-//                                        MapActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));
-//
-//                        SymbolLayer symbolLayer = new SymbolLayer("layer-id", "source-id");
-//                        SymbolLayer symbolLayer2 = new SymbolLayer("layer-id2", "source-id2");
-//                        symbolLayer.withProperties(
-//                                PropertyFactory.iconImage("marker-icon-id")
-//                        );
-//                        symbolLayer2.withProperties(
-//                                PropertyFactory.iconImage("marker-icon-id")
-//                        );
-//                        style.addLayer(symbolLayer);
-//                        style.addLayer(symbolLayer2);
+                        //Add the marker image to map
+                        style.addImage("marker-icon-id",
+                                BitmapFactory.decodeResource(
+                                       MapActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));
+
+                        GeoJsonSource geoJsonSource = new GeoJsonSource("source-id", Feature.fromGeometry(
+                                Point.fromLngLat(gps.getLongitude(), gps.getLatitude())));
+                        style.addSource(geoJsonSource);
+
+                        SymbolLayer symbolLayer = new SymbolLayer("layer-id", "source-id");
+                        symbolLayer.withProperties(
+                                PropertyFactory.iconImage("marker-icon-id")
+                        );
+                        style.addLayer(symbolLayer);
                     }
                 });
             }
