@@ -25,11 +25,11 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-<<<<<<< HEAD
+
 import android.widget.ImageView;
-=======
+
 import android.widget.Button;
->>>>>>> MQTTAndroid
+
 import android.widget.Toast;
 
 import com.example.mascotteappa3.MascotApp.MQTT.MQTTConfig;
@@ -37,11 +37,18 @@ import com.example.mascotteappa3.MascotApp.MQTT.MqttMessageService;
 import com.example.mascotteappa3.MascotApp.MQTT.PahoMqttClient;
 import com.example.mascotteappa3.MascotApp.Sensors.GPSTracker;
 import com.example.mascotteappa3.R;
+import com.mapbox.android.core.location.LocationEngine;
+import com.mapbox.android.core.location.LocationEngineCallback;
+import com.mapbox.android.core.location.LocationEngineProvider;
+import com.mapbox.android.core.location.LocationEngineRequest;
+import com.mapbox.android.core.location.LocationEngineResult;
+import com.mapbox.android.core.permissions.PermissionsListener;
+import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.Point;
-=======
+
 import com.google.gson.JsonObject;
->>>>>>> MQTTAndroid
+
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.location.LocationComponent;
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
@@ -57,15 +64,14 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class MapActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MapActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
         OnMapReadyCallback, PermissionsListener {
@@ -101,9 +107,6 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
     public static final String BROADCAST_ACTION = "com.appsfromholland.mqttpayloadavailabe";
     public Map lastCoordinates;
     private Button reconnectButton;
-
-    private int counter = 0;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,6 +150,7 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
         img1.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
                 if(rood) {
+                    //mapboxMap.setStyle();
                     img1.setImageResource(R.drawable.mascotterood);
                 }
                 else{

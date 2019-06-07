@@ -39,5 +39,7 @@ dependencies {
     implementation 'com.karumi:dexter:4.2.0'
     // ButterKnife view binding
     implementation 'com.jakewharton:butterknife:8.8.1'
+    implementation files('libs/org.eclipse.paho.android.service-1.1.1.jar')
+    implementation files('libs/org.eclipse.paho.client.mqttv3-1.1.1.jar')
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 }
