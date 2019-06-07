@@ -59,6 +59,12 @@
             mapbox:layout_constraintHorizontal_bias="0.0"
             mapbox:layout_constraintStart_toStartOf="parent"
             mapbox:layout_constraintTop_toBottomOf="@+id/mascotte1" />
+    <Button
+        android:id="@+id/reconnectButton"
+        android:layout_width="268dp"
+        android:layout_height="wrap_content"
+        android:text="MQTTReconnect" />
+</android.support.design.widget.NavigationView>
 
         <ImageView
             android:id="@+id/mascotte3"

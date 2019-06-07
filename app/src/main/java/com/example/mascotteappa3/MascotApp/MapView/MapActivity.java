@@ -1,8 +1,10 @@
 package com.example.mascotteappa3.MascotApp.MapView;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.media.Image;
@@ -21,13 +23,24 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+<<<<<<< HEAD
 import android.widget.ImageView;
+=======
+import android.widget.Button;
+>>>>>>> MQTTAndroid
 import android.widget.Toast;
 
+import com.example.mascotteappa3.MascotApp.MQTT.MQTTConfig;
+import com.example.mascotteappa3.MascotApp.MQTT.MqttMessageService;
+import com.example.mascotteappa3.MascotApp.MQTT.PahoMqttClient;
 import com.example.mascotteappa3.MascotApp.Sensors.GPSTracker;
 import com.example.mascotteappa3.R;
+<<<<<<< HEAD
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.Point;
+=======
+import com.google.gson.JsonObject;
+>>>>>>> MQTTAndroid
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -36,6 +49,14 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MapActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -54,6 +75,13 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
 
     private GPSTracker gps = new GPSTracker();
     private Context mContext; // necessary for the GPS tracker to function
+    private MqttAndroidClient client;
+    private PahoMqttClient pahoMqttClient;
+    private MyBroadcastReceiver myBroadCastReceiver;
+    public static final String BROADCAST_ACTION = "com.appsfromholland.mqttpayloadavailabe";
+    public Map lastCoordinates;
+    private Button reconnectButton;
+
 
 
     @Override
@@ -62,7 +90,7 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
 
         // This till
         mContext = this;
-
+        Log.d("Main", "Main started");
         if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MapActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 
@@ -183,6 +211,113 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
                 });
             }
         });
+
+        lastCoordinates = new HashMap<String, JsonObject>();
+        setupMQTT();
+    }
+
+
+    protected void setupMQTT() {
+        Toast.makeText(this,"Testmessage",Toast.LENGTH_LONG).show();
+        Log.d("SetupMQTT", "SetupMQTT");
+
+        pahoMqttClient = new PahoMqttClient();
+        client = pahoMqttClient.getMqttClient(
+                getApplicationContext(),
+                MQTTConfig.getInstance().MQTT_BROKER_URL(),
+                MQTTConfig.getInstance().CLIENT_ID());
+
+
+        // Setup Broadcast receiver
+        myBroadCastReceiver = new MyBroadcastReceiver();
+
+        // Start Broadcast receiver
+        try
+        {
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(BROADCAST_ACTION);
+            registerReceiver(myBroadCastReceiver, intentFilter);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+
+        reconnectButton = findViewById(R.id.reconnectButton);
+        reconnectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    pahoMqttClient.subscribe(client, MQTTConfig.getInstance().PUBLISH_TOPIC(), 0);
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+ /*       try {
+            Log.d("Trying to subscribe", "");
+
+            if (client.isConnected()) {
+                pahoMqttClient.subscribe(client, MQTTConfig.getInstance().PUBLISH_TOPIC(), 0);
+            }
+            else
+            {
+                Log.d("Error", "no connection");
+            }
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }*/
+
+
+
+
+        // Start services
+        try {
+            Intent intent = new Intent(MapActivity.this, MqttMessageService.class);
+            startService(intent);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+
+
+    }
+
+    // Defineer een eigen broadcast receiver, deze vangt alles op voor
+    public class MyBroadcastReceiver extends BroadcastReceiver {
+
+        private final String TAG = "MyBroadcastReceiver";
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            try
+            {
+                String payload = intent.getStringExtra("payload");
+                Log.i(TAG,  payload);
+
+                try {
+                    JSONObject jsonObject = new JSONObject(payload);
+                    if (jsonObject.has("Coordinaat"))
+                    {
+                        Log.d("Type received", "Coordinaat");
+                        lastCoordinates.put(jsonObject.getJSONObject("Coordinaat").get("id"),jsonObject);
+                    }
+                    else if (jsonObject.has("Mascotte"))
+                    {
+                        Log.d("Type received", "Mascotteknop");
+                        //TODO: Tell map to show the currently stored coordinate for that mascot
+
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            } catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
     }
 
     @Override
