@@ -19,6 +19,8 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.mascotteappa3.MascotApp.MapView.MapActivity;
+
 public class GPSTracker extends Service implements LocationListener {
 
     private Context mContext;
@@ -106,7 +108,6 @@ public class GPSTracker extends Service implements LocationListener {
                                     LocationManager.GPS_PROVIDER,
                                     MIN_TIME_BW_UPDATES,
                                     MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                            Log.d("GPS Enabled", "GPS Enabled");
                             if (locationManager != null) {
                                 location = locationManager
                                         .getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -214,7 +215,7 @@ public class GPSTracker extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        Toast.makeText(mContext, "Test", Toast.LENGTH_LONG).show();
+
     }
 
 

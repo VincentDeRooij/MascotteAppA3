@@ -2,6 +2,7 @@ package com.example.mascotteappa3.MascotApp.MapView;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -10,6 +11,7 @@ import android.content.res.Configuration;
 import android.media.Image;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -35,13 +37,16 @@ import com.example.mascotteappa3.MascotApp.MQTT.MqttMessageService;
 import com.example.mascotteappa3.MascotApp.MQTT.PahoMqttClient;
 import com.example.mascotteappa3.MascotApp.Sensors.GPSTracker;
 import com.example.mascotteappa3.R;
-<<<<<<< HEAD
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.Point;
 =======
 import com.google.gson.JsonObject;
 >>>>>>> MQTTAndroid
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.location.LocationComponent;
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
+import com.mapbox.mapboxsdk.location.modes.CameraMode;
+import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
@@ -59,8 +64,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MapActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+import java.lang.ref.WeakReference;
+import java.util.List;
+
+public class MapActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
+        OnMapReadyCallback, PermissionsListener {
 
     private MapView mapView;
+    private MapboxMap mapboxMap;
+
     private DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
 
@@ -73,6 +85,14 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
     private boolean groen = true;
     private boolean geel = true;
 
+    private PermissionsManager permissionsManager;
+    // Variables needed to add the location engine
+    private LocationEngine locationEngine;
+    private long DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L;
+    private long DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5;
+    // Variables needed to listen to location updates
+    private MainActivityLocationCallback callback = new MainActivityLocationCallback(this);
+
     private GPSTracker gps = new GPSTracker();
     private Context mContext; // necessary for the GPS tracker to function
     private MqttAndroidClient client;
@@ -82,6 +102,7 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
     public Map lastCoordinates;
     private Button reconnectButton;
 
+    private int counter = 0;
 
 
     @Override
@@ -114,6 +135,7 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
                 gps.showSettingsAlert();
             }
         }
+
 
         // This is necessary for the built-in GPS to function properly
 
@@ -185,7 +207,8 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
 
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(new OnMapReadyCallback() {
+        mapView.getMapAsync(this);
+        /*mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull final MapboxMap mapboxMap) {
 
@@ -196,10 +219,11 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
                         //Add the marker image to ma
                         style.addImage("marker-icon-id",
                                 BitmapFactory.decodeResource(
-                                       MapActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));
+                                        MapActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));
 
                         GeoJsonSource geoJsonSource = new GeoJsonSource("source-id", Feature.fromGeometry(
                                 Point.fromLngLat(gps.getLongitude(), gps.getLatitude())));
+
                         style.addSource(geoJsonSource);
 
                         SymbolLayer symbolLayer = new SymbolLayer("layer-id", "source-id");
@@ -321,42 +345,161 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    public void onMapReady(@NonNull final MapboxMap mapboxMap) {
+        this.mapboxMap = mapboxMap;
 
-        switch (requestCode) {
-            case 1: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
-                    gps = new GPSTracker(mContext, MapActivity.this);
-
-                    // Check if GPS enabled
-                    if (gps.canGetLocation()) {
-
-                        double latitude = gps.getLatitude();
-                        double longitude = gps.getLongitude();
-
-                        // \n is for new line
-                        Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
-                    } else {
-                        // Can't get location.
-                        // GPS or network is not enabled.
-                        // Ask user to enable GPS/network in settings.
-                        gps.showSettingsAlert();
+        mapboxMap.setStyle(new Style.Builder().fromUrl("mapbox://styles/vwjapderooij/cjvqha9wx0t8w1co93osiftuh"),
+                new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        enableLocationComponent(style);
+                        thisTest(style);
                     }
+                });
+    }
 
-                } else {
+    private void thisTest(Style style) {
+        //Add the marker image to ma
+        style.addImage("marker-icon-id",
+                BitmapFactory.decodeResource(
+                        MapActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));
 
-                    // Permission denied, disable the functionality that depends on this permission.
+        GeoJsonSource geoJsonSource = new GeoJsonSource("source-id", Feature.fromGeometry(
+                Point.fromLngLat(gps.getLongitude(), gps.getLatitude())));
 
-                    Toast.makeText(mContext, "You need to grant permission", Toast.LENGTH_SHORT).show();
+        style.addSource(geoJsonSource);
+
+        SymbolLayer symbolLayer = new SymbolLayer("layer-id", "source-id");
+        symbolLayer.withProperties(
+                PropertyFactory.iconImage("marker-icon-id")
+        );
+        style.addLayer(symbolLayer);
+    }
+
+    /**
+     * Initialize the Maps SDK's LocationComponent
+     */
+    @SuppressWarnings( {"MissingPermission"})
+    private void enableLocationComponent(@NonNull Style loadedMapStyle) {
+        // Check if permissions are enabled and if not request
+        if (PermissionsManager.areLocationPermissionsGranted(this)) {
+
+            // Get an instance of the component
+            LocationComponent locationComponent = mapboxMap.getLocationComponent();
+
+            // Set the LocationComponent activation options
+            LocationComponentActivationOptions locationComponentActivationOptions =
+                    LocationComponentActivationOptions.builder(this, loadedMapStyle)
+                            .useDefaultLocationEngine(false)
+                            .build();
+
+            // Activate with the LocationComponentActivationOptions object
+            locationComponent.activateLocationComponent(locationComponentActivationOptions);
+
+            // Enable to make component visible
+            locationComponent.setLocationComponentEnabled(true);
+
+            // Set the component's camera mode
+            locationComponent.setCameraMode(CameraMode.TRACKING);
+
+            // Set the component's render mode
+            locationComponent.setRenderMode(RenderMode.COMPASS);
+
+            initLocationEngine();
+        } else {
+            permissionsManager = new PermissionsManager(this);
+            permissionsManager.requestLocationPermissions(this);
+        }
+    }
+
+    /**
+     * Set up the LocationEngine and the parameters for querying the device's location
+     */
+    @SuppressLint("MissingPermission")
+    private void initLocationEngine() {
+        locationEngine = LocationEngineProvider.getBestLocationEngine(this);
+
+        LocationEngineRequest request = new LocationEngineRequest.Builder(DEFAULT_INTERVAL_IN_MILLISECONDS)
+                .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
+                .setMaxWaitTime(DEFAULT_MAX_WAIT_TIME).build();
+
+        locationEngine.requestLocationUpdates(request, callback, getMainLooper());
+        locationEngine.getLastLocation(callback);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    public void onExplanationNeeded(List<String> permissionsToExplain) {
+        Toast.makeText(this, R.string.location_explanation, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onPermissionResult(boolean granted) {
+        if (granted) {
+            if (mapboxMap.getStyle() != null) {
+                enableLocationComponent(mapboxMap.getStyle());
+            }
+        } else {
+            Toast.makeText(this, R.string.location_explanation, Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+
+    private static class MainActivityLocationCallback
+            implements LocationEngineCallback<LocationEngineResult> {
+
+        private final WeakReference<MapActivity> activityWeakReference;
+
+        MainActivityLocationCallback(MapActivity activity) {
+            this.activityWeakReference = new WeakReference<>(activity);
+        }
+
+        /**
+         * The LocationEngineCallback interface's method which fires when the device's location has changed.
+         *
+         * @param result the LocationEngineResult object which has the last known location within it.
+         */
+        @Override
+        public void onSuccess(LocationEngineResult result) {
+            MapActivity activity = activityWeakReference.get();
+
+            if (activity != null) {
+                Location location = result.getLastLocation();
+
+                if (location == null) {
+                    return;
                 }
-                return;
+
+                // Create a Toast which displays the new location's coordinates
+                String textToShow = String.format(activity.getString(R.string.new_location) +
+                        (result.getLastLocation().getLatitude()) +
+                        (result.getLastLocation().getLongitude()));
+
+                Toast.makeText(activity, textToShow, Toast.LENGTH_SHORT).show();
+
+                // Pass the new location to the Maps SDK's LocationComponent
+                if (activity.mapboxMap != null && result.getLastLocation() != null) {
+                    activity.mapboxMap.getLocationComponent().forceLocationUpdate(result.getLastLocation());
+                }
+            }
+        }
+
+        /**
+         * The LocationEngineCallback interface's method which fires when the device's location can not be captured
+         *
+         * @param exception the exception message
+         */
+        @Override
+        public void onFailure(@NonNull Exception exception) {
+            Log.d("LocationChangeActivity", exception.getLocalizedMessage());
+            MapActivity activity = activityWeakReference.get();
+            if (activity != null) {
+                Toast.makeText(activity, exception.getLocalizedMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -429,7 +572,7 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         Intent intent = NavigationHelper.getInstance().onNavigationItemSelected(menuItem, this);
 
-        if(intent == null) {
+        if (intent == null) {
             return false;
         }
 
