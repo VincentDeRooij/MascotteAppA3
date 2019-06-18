@@ -2,6 +2,7 @@ package com.example.mascotteappa3.MascotApp.MapView;
 
 class GPSCoordinate {
 
+    //Todo: Make sure cooridnates are suitable for mapbox
     private double latitude;
     private double longitude;
 
