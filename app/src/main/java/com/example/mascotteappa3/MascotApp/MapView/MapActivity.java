@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -41,6 +42,9 @@ import com.mapbox.android.core.location.LocationEngineResult;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
 
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.location.LocationComponent;
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
@@ -50,6 +54,9 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -65,8 +72,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconSize;
 
 public class MapActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
@@ -92,6 +104,16 @@ public class MapActivity extends AppCompatActivity implements
     private boolean blauw = true;
     private boolean groen = true;
     private boolean geel = true;
+
+    private SymbolLayer symbolBlue;
+    private SymbolLayer symbolRed;
+    private SymbolLayer symbolYellow;
+    private SymbolLayer symbolGreen;
+
+    private GeoJsonSource sourceBlue;
+    private GeoJsonSource sourceRed;
+    private GeoJsonSource sourceYellow;
+    private GeoJsonSource sourceGreen;
 
     private PermissionsManager permissionsManager;
     // Variables needed to add the location engine
@@ -247,22 +269,65 @@ public class MapActivity extends AppCompatActivity implements
         }
     }
 
-
-
-
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
         this.mapboxMap = mapboxMap;
 
-        mapboxMap.setStyle(new Style.Builder().fromUrl("mapbox://styles/vwjapderooij/cjvqha9wx0t8w1co93osiftuh"),
-        new Style.OnStyleLoaded() {
-            @Override
-            public void onStyleLoaded(@NonNull Style style) {
-                enableLocationComponent(style);
-            }
-        });
+        ArrayList<Feature> symbolLayerIconFeatureList = new ArrayList<>();
 
-        this.mapboxMap = mapboxMap;
+        mapboxMap.setStyle(new Style.Builder().fromUrl("mapbox://styles/vwjapderooij/cjvqha9wx0t8w1co93osiftuh?optimize=true")
+                        .withImage("MascotteBlue", BitmapFactory.decodeResource(MapActivity.this.getResources(), R.drawable.mascotteblauw)) // init of the blue mascot tracker
+                        .withSource(sourceBlue = new GeoJsonSource("MascotteBlueSource", FeatureCollection.fromFeatures(symbolLayerIconFeatureList)))
+                        .withImage("MascotteRed", BitmapFactory.decodeResource(MapActivity.this.getResources(), R.drawable.mascotterood)) // init of the red mascot tracker
+                        .withSource(sourceRed = new GeoJsonSource("MascotteRedSource", FeatureCollection.fromFeatures(symbolLayerIconFeatureList)))
+                        .withImage("MascotteYellow", BitmapFactory.decodeResource(MapActivity.this.getResources(), R.drawable.mascottegeel)) // init of the yellow mascot tracker
+                        .withSource(sourceYellow = new GeoJsonSource("MascotteYellowSource", FeatureCollection.fromFeatures(symbolLayerIconFeatureList)))
+                        .withImage("MascotteGreen", BitmapFactory.decodeResource(MapActivity.this.getResources(), R.drawable.mascottegroen)) // init of the green mascot tracker
+                        .withSource(sourceGreen = new GeoJsonSource("MascotteGreenSource", FeatureCollection.fromFeatures(symbolLayerIconFeatureList)))
+
+                        .withLayer(symbolBlue = new SymbolLayer("Mascotte-BlueLayer", "MascotteBlueSource") // loading of the Blue Mascot TrackerIcon
+                                .withProperties(PropertyFactory.iconImage("MascotteBlue"),
+                                        iconAllowOverlap(true),
+                                        iconOffset(new Float[]{0f, 0f}),
+                                        iconSize(0.09f))
+                        )
+                        .withLayer(symbolRed = new SymbolLayer("Mascotte-RedLayer", "MascotteRedSource") // loading of the Red Mascot TrackerIcon
+                                .withProperties(PropertyFactory.iconImage("MascotteRed"),
+                                        iconAllowOverlap(true),
+                                        iconOffset(new Float[]{0f, 0f}),
+                                        iconSize(0.09f))
+                        )
+                        .withLayer(symbolYellow = new SymbolLayer("Mascotte-YellowLayer", "MascotteYellowSource") // loading of the Yellow Mascot TrackerIcon
+                                .withProperties(PropertyFactory.iconImage("MascotteYellow"),
+                                        iconAllowOverlap(true),
+                                        iconOffset(new Float[]{0f, 0f}),
+                                        iconSize(0.09f))
+                        )
+                        .withLayer(symbolGreen = new SymbolLayer("Mascotte-GreenLayer", "MascotteGreenSource") // // loading of the Green Mascot TrackerIcon
+                                .withProperties(PropertyFactory.iconImage("MascotteGreen"),
+                                        iconAllowOverlap(true),
+                                        iconOffset(new Float[]{0f, 0f}),
+                                        iconSize(0.09f))
+                        )
+                , new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        enableLocationComponent(style);
+
+                        //sourceGreen.setGeoJson(Point.fromLngLat(4.791761, 51.585800));
+                        updateMarkerPosition(4.791961, 51.585800, sourceBlue);
+                        updateMarkerPosition(4.791761, 51.586800, sourceRed);
+                        updateMarkerPosition(4.791661, 51.586600, sourceYellow);
+                        updateMarkerPosition(4.791861, 51.586800, sourceGreen);
+                        //updateMarkerPosition(4.791761, 51.587800, sourceBlue);
+
+
+                    }
+                });
+    }
+
+    private void updateMarkerPosition(double longitude, double latitude, GeoJsonSource source) {
+        source.setGeoJson(Point.fromLngLat(longitude, latitude));
     }
 
     /**
