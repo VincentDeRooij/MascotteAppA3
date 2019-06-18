@@ -1,7 +1,7 @@
 Topics voor MQTT server:
 
 TI-14-2019/A3/GPSCoordinaten
-TI-14-2019/A3/MascotteKnoppen
+
 
 JSON formaat en voorbeeld:
 GPS tracker:

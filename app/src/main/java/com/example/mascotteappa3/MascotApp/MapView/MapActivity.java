@@ -2,10 +2,13 @@ package com.example.mascotteappa3.MascotApp.MapView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -58,6 +61,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -67,6 +72,10 @@ public class MapActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         OnMapReadyCallback,
         PermissionsListener {
+
+    private MyBroadcastReceiver myBroadCastReceiver;
+    static final String BROADCAST_ACTION = "com.example.mascotteappa3.mqttpayloadavailabe";
+
 
     private MapView mapView;
     private MapboxMap mapboxMap;
@@ -96,7 +105,7 @@ public class MapActivity extends AppCompatActivity implements
     private Context mContext; // necessary for the GPS tracker to function
 
 
-    public Map lastCoordinates;
+    public Map<String,GPSCoordinate> lastCoordinates;
     private Button reconnectButton;
 
     @Override
@@ -212,6 +221,30 @@ public class MapActivity extends AppCompatActivity implements
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+
+        // Setup Broadcast receiver
+        myBroadCastReceiver = new MyBroadcastReceiver();
+
+        // Start Broadcast receiver
+        try
+        {
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(BROADCAST_ACTION);
+            registerReceiver(myBroadCastReceiver, intentFilter);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+
+        // Start services
+        try {
+            Intent intent = new Intent(MapActivity.this, MascotMQTT.class);
+            startService(intent);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -394,7 +427,9 @@ public class MapActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(myBroadCastReceiver);
         mapView.onDestroy();
+
     }
 
     @Override
@@ -435,4 +470,49 @@ public class MapActivity extends AppCompatActivity implements
         startActivity(intent);
         return true;
     }
+
+    // Defineer een eigen broadcast receiver, deze vangt alles op voor
+    public class MyBroadcastReceiver extends BroadcastReceiver {
+
+        private final String TAG = "MyBroadcastReceiver";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            try
+            {
+                String payload = intent.getStringExtra("payload");
+                Log.i(TAG,  payload);
+
+                try {
+                    JSONObject jsonObject = new JSONObject(payload);
+                    if (jsonObject.has("Coordinaat"))
+                    {
+                        Log.d("Type received", "Coordinaat");
+                        String id = jsonObject.getJSONObject("Coordinaat").getString("id");
+                        double latitude = jsonObject.getJSONObject("Coordinaat").getDouble("latitude");
+                        double longitude = jsonObject.getJSONObject("Coordinaat").getDouble("longitude");
+                        lastCoordinates.put(id,new GPSCoordinate(latitude,longitude));
+                    }
+                    else if (jsonObject.has("Mascotte")) {
+                        Log.d("Type received", "Mascotteknop");
+                        String id = jsonObject.getJSONObject("Mascotte").getString("id");
+                        if (lastCoordinates.containsKey(id)) {
+                            //Todo: Handle press of button for "id"
+
+                            Log.d("Handled received", "Mascotteknop");
+
+                            lastCoordinates.remove(id);
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            } catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+    }
+
 }
