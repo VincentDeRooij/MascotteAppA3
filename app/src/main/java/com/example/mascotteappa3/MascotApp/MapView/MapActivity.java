@@ -491,20 +491,18 @@ public class MapActivity extends AppCompatActivity implements
                         String id = jsonObject.getJSONObject("Coordinaat").getString("id");
                         double latitude = jsonObject.getJSONObject("Coordinaat").getDouble("latitude");
                         double longitude = jsonObject.getJSONObject("Coordinaat").getDouble("longitude");
-
+                        lastCoordinates.put(id,new GPSCoordinate(latitude,longitude));
                     }
-                    else if (jsonObject.has("Mascotte"))
-                    {
+                    else if (jsonObject.has("Mascotte")) {
                         Log.d("Type received", "Mascotteknop");
                         String id = jsonObject.getJSONObject("Mascotte").getString("id");
+                        if (lastCoordinates.containsKey(id)) {
+                            //Todo: Handle press of button for "id"
 
-                    }
-                    else {
-                        int red = jsonObject.getJSONObject("ledColor").getInt("r");
-                        int green = jsonObject.getJSONObject("ledColor").getInt("g");
-                        int blue = jsonObject.getJSONObject("ledColor").getInt("b");
+                            Log.d("Handled received", "Mascotteknop");
 
-                        //layout.setBackgroundColor(Color.rgb(red, green, blue));
+                            lastCoordinates.remove(id);
+                        }
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
