@@ -1,0 +1,80 @@
+package com.example.mascotteappa3.MascotApp.MapView;
+
+class GPSCoordinate {
+
+    //Todo: Make sure cooridnates are suitable for mapbox
+    private double latitude;
+    private double longitude;
+
+    public void GPSCoordinate(double latitude, double longitude) {
+        this.latitude = GPSConverter(latitude);
+        this.longitude = GPSConverter(longitude);
+    }
+
+    public static double GPSConverter(double number) {
+        String numberString = number + "";
+
+        String[] latStringSplit = numberString.split("\\.");
+        String strNumber = latStringSplit[0];
+        double defNumber = 0.0;
+
+        if(strNumber.length() > 3) {
+            int firstNumber = Integer.parseInt(strNumber.substring(0, 2));
+            int secondNumber = Integer.parseInt(strNumber.substring(2));
+
+            double numberAfterComma = secondNumberWithInt(latStringSplit[1]);
+
+            defNumber = doCalculations(firstNumber, secondNumber, numberAfterComma);
+        }
+        else {
+            int firstNumber = Integer.parseInt(strNumber.substring(0, 1));
+            int secondNumber = Integer.parseInt(strNumber.substring(1));
+
+            double numberAfterComma = secondNumberWithInt(latStringSplit[1]);
+
+            defNumber = doCalculations(firstNumber, secondNumber, numberAfterComma);
+        }
+        return defNumber;
+    }
+
+    public static double doCalculations(int firstNumber, int secondNumber, double numberAfterComma) {
+
+        double tempNumber = secondNumber * 60 + numberAfterComma;
+
+        tempNumber = tempNumber / 3600;
+        String tempNumberAsString = tempNumber + "";
+        String lat = firstNumber + "." + tempNumberAsString.substring(2);
+        double defNumber = Double.parseDouble(lat);
+
+        return defNumber;
+    }
+
+    public static double secondNumberWithInt(String strNumber) {
+        double defNumber = 0.0;
+
+        if(strNumber.length() > 3) {
+            int firstNumber = Integer.parseInt(strNumber.substring(0, 2));
+            int secondNumber = Integer.parseInt(strNumber.substring(2));
+
+            String lat = firstNumber + "." + secondNumber;
+            defNumber = Double.parseDouble(defNumber + Double.parseDouble(lat) + "");
+        }
+        else {
+            int firstNumber = Integer.parseInt(strNumber.substring(0, 1));
+            int secondNumber = Integer.parseInt(strNumber.substring(1));
+
+            String lat = firstNumber + "." + secondNumber + "";
+            defNumber = Double.parseDouble(defNumber + Double.parseDouble(lat) + "");
+        }
+
+        return defNumber;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+}
