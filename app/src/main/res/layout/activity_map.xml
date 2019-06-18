@@ -60,15 +60,6 @@
             mapbox:layout_constraintStart_toStartOf="parent"
             mapbox:layout_constraintTop_toBottomOf="@+id/mascotte1" />
 
-        <Button
-            android:id="@+id/reconnectButton"
-            android:layout_width="268dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="MQTTReconnect"
-            mapbox:layout_constraintBottom_toBottomOf="parent"
-            mapbox:layout_constraintEnd_toEndOf="parent" />
-
 
         <ImageView
             android:id="@+id/mascotte3"

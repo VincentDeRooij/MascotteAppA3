@@ -1,17 +1,12 @@
 package com.example.mascotteappa3.MascotApp.MapView;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.media.Image;
-import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -32,9 +27,7 @@ import android.widget.Button;
 
 import android.widget.Toast;
 
-import com.example.mascotteappa3.MascotApp.MQTT.MQTTConfig;
-import com.example.mascotteappa3.MascotApp.MQTT.MqttMessageService;
-import com.example.mascotteappa3.MascotApp.MQTT.PahoMqttClient;
+import com.example.mascotteappa3.MascotApp.MQTT.MascotMQTT;
 import com.example.mascotteappa3.MascotApp.Sensors.GPSTracker;
 import com.example.mascotteappa3.R;
 import com.mapbox.android.core.location.LocationEngine;
@@ -44,10 +37,6 @@ import com.mapbox.android.core.location.LocationEngineRequest;
 import com.mapbox.android.core.location.LocationEngineResult;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
-import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.Point;
-
-import com.google.gson.JsonObject;
 
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.location.LocationComponent;
@@ -58,23 +47,26 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
-import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MapActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
-        OnMapReadyCallback, PermissionsListener {
+public class MapActivity extends AppCompatActivity implements
+        NavigationView.OnNavigationItemSelectedListener,
+        OnMapReadyCallback,
+        PermissionsListener {
 
     private MapView mapView;
     private MapboxMap mapboxMap;
@@ -86,6 +78,7 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
     private ImageView img2 = null;
     private ImageView img3 = null;
     private ImageView img4 = null;
+
     private boolean rood = true;
     private boolean blauw = true;
     private boolean groen = true;
@@ -101,16 +94,18 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
 
     private GPSTracker gps = new GPSTracker();
     private Context mContext; // necessary for the GPS tracker to function
-    private MqttAndroidClient client;
-    private PahoMqttClient pahoMqttClient;
-    private MyBroadcastReceiver myBroadCastReceiver;
-    public static final String BROADCAST_ACTION = "com.appsfromholland.mqttpayloadavailabe";
+
+
     public Map lastCoordinates;
     private Button reconnectButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        String clientId = MqttClient.generateClientId();
+        MascotMQTT mascotMQTT = new MascotMQTT(this, this, clientId);
+        mascotMQTT.connect();
 
         // This till
         mContext = this;
@@ -149,52 +144,57 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
         img1 = findViewById(R.id.mascotte1);
         img1.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
+                rood = !rood;
                 if(rood) {
-                    //mapboxMap.setStyle();
                     img1.setImageResource(R.drawable.mascotterood);
                 }
                 else{
+
                     img1.setImageResource(R.drawable.mascotteg);
                 }
-                rood = !rood;
             }
         });
         img2 = findViewById(R.id.mascotte2);
         img2.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
+                blauw = !blauw;
                 if(blauw) {
                     img2.setImageResource(R.drawable.mascotteblauw);
                 }
                 else{
                     img2.setImageResource(R.drawable.mascotteg);
                 }
-                blauw = !blauw;
             }
         });
         img3 = findViewById(R.id.mascotte3);
         img3.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
+                groen = !groen;
                 if(groen) {
                     img3.setImageResource(R.drawable.mascottegroen);
                 }
                 else{
                     img3.setImageResource(R.drawable.mascotteg);
                 }
-                groen = !groen;
             }
         });
         img4 = findViewById(R.id.mascotte4);
         img4.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
+                geel = !geel;
                 if(geel) {
                     img4.setImageResource(R.drawable.mascottegeel);
                 }
                 else{
                     img4.setImageResource(R.drawable.mascotteg);
                 }
-                geel = !geel;
             }
         });
+
+        img1.setImageResource(R.drawable.mascotterood);
+        img2.setImageResource(R.drawable.mascotteblauw);
+        img3.setImageResource(R.drawable.mascottegroen);
+        img4.setImageResource(R.drawable.mascottegeel);
 
         Toolbar toolbar = findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
@@ -212,172 +212,24 @@ public class MapActivity extends AppCompatActivity implements NavigationView.OnN
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
-        /*mapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(@NonNull final MapboxMap mapboxMap) {
-
-                mapboxMap.setStyle(new Style.Builder().fromUrl("mapbox://styles/vwjapderooij/cjvqha9wx0t8w1co93osiftuh"), new Style.OnStyleLoaded() {
-                    @Override
-                    public void onStyleLoaded(@NonNull Style style) {
-
-                        //Add the marker image to ma
-                        style.addImage("marker-icon-id",
-                                BitmapFactory.decodeResource(
-                                        MapActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));
-
-                        GeoJsonSource geoJsonSource = new GeoJsonSource("source-id", Feature.fromGeometry(
-                                Point.fromLngLat(gps.getLongitude(), gps.getLatitude())));
-
-                        style.addSource(geoJsonSource);
-
-                        SymbolLayer symbolLayer = new SymbolLayer("layer-id", "source-id");
-                        symbolLayer.withProperties(
-                                PropertyFactory.iconImage("marker-icon-id")
-                        );
-                        style.addLayer(symbolLayer);
-                    }
-                });
-            }
-        });
-
-        lastCoordinates = new HashMap<String, JsonObject>();
-        setupMQTT();
     }
 
 
-    protected void setupMQTT() {
-        Toast.makeText(this,"Testmessage",Toast.LENGTH_LONG).show();
-        Log.d("SetupMQTT", "SetupMQTT");
 
-        pahoMqttClient = new PahoMqttClient();
-        client = pahoMqttClient.getMqttClient(
-                getApplicationContext(),
-                MQTTConfig.getInstance().MQTT_BROKER_URL(),
-                MQTTConfig.getInstance().CLIENT_ID());
-
-
-        // Setup Broadcast receiver
-        myBroadCastReceiver = new MyBroadcastReceiver();
-
-        // Start Broadcast receiver
-        try
-        {
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(BROADCAST_ACTION);
-            registerReceiver(myBroadCastReceiver, intentFilter);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-
-        reconnectButton = findViewById(R.id.reconnectButton);
-        reconnectButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    pahoMqttClient.subscribe(client, MQTTConfig.getInstance().PUBLISH_TOPIC(), 0);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
- /*       try {
-            Log.d("Trying to subscribe", "");
-
-            if (client.isConnected()) {
-                pahoMqttClient.subscribe(client, MQTTConfig.getInstance().PUBLISH_TOPIC(), 0);
-            }
-            else
-            {
-                Log.d("Error", "no connection");
-            }
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }*/
-
-
-
-
-        // Start services
-        try {
-            Intent intent = new Intent(MapActivity.this, MqttMessageService.class);
-            startService(intent);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
-
-
-    }
-
-    // Defineer een eigen broadcast receiver, deze vangt alles op voor
-    public class MyBroadcastReceiver extends BroadcastReceiver {
-
-        private final String TAG = "MyBroadcastReceiver";
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            try
-            {
-                String payload = intent.getStringExtra("payload");
-                Log.i(TAG,  payload);
-
-                try {
-                    JSONObject jsonObject = new JSONObject(payload);
-                    if (jsonObject.has("Coordinaat"))
-                    {
-                        Log.d("Type received", "Coordinaat");
-                        lastCoordinates.put(jsonObject.getJSONObject("Coordinaat").get("id"),jsonObject);
-                    }
-                    else if (jsonObject.has("Mascotte"))
-                    {
-                        Log.d("Type received", "Mascotteknop");
-                        //TODO: Tell map to show the currently stored coordinate for that mascot
-
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            } catch (Exception ex)
-            {
-                ex.printStackTrace();
-            }
-        }
-    }
 
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
         this.mapboxMap = mapboxMap;
 
         mapboxMap.setStyle(new Style.Builder().fromUrl("mapbox://styles/vwjapderooij/cjvqha9wx0t8w1co93osiftuh"),
-                new Style.OnStyleLoaded() {
-                    @Override
-                    public void onStyleLoaded(@NonNull Style style) {
-                        enableLocationComponent(style);
-                        thisTest(style);
-                    }
-                });
-    }
+        new Style.OnStyleLoaded() {
+            @Override
+            public void onStyleLoaded(@NonNull Style style) {
+                enableLocationComponent(style);
+            }
+        });
 
-    private void thisTest(Style style) {
-        //Add the marker image to ma
-        style.addImage("marker-icon-id",
-                BitmapFactory.decodeResource(
-                        MapActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));
-
-        GeoJsonSource geoJsonSource = new GeoJsonSource("source-id", Feature.fromGeometry(
-                Point.fromLngLat(gps.getLongitude(), gps.getLatitude())));
-
-        style.addSource(geoJsonSource);
-
-        SymbolLayer symbolLayer = new SymbolLayer("layer-id", "source-id");
-        symbolLayer.withProperties(
-                PropertyFactory.iconImage("marker-icon-id")
-        );
-        style.addLayer(symbolLayer);
+        this.mapboxMap = mapboxMap;
     }
 
     /**
