@@ -128,6 +128,7 @@ public class MapActivity extends AppCompatActivity implements
     private Context mContext; // necessary for the GPS tracker to function
 
 
+    //Variables used for saving and putting GPS coordinates to the right map marker
     public Map<String,GPSCoordinate> lastCoordinates = new HashMap<>();
     public Map<String,GeoJsonSource> mapMarkers = new HashMap<>();
 
@@ -138,11 +139,11 @@ public class MapActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //Starts MQTT program
         String clientId = MqttClient.generateClientId();
         MascotMQTT mascotMQTT = new MascotMQTT(this, this, clientId, this);
         mascotMQTT.connect();
 
-        // This till
         mContext = this;
         Log.d("Main", "Main started");
         if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -176,6 +177,7 @@ public class MapActivity extends AppCompatActivity implements
 
         setContentView(R.layout.activity_map);
 
+        //Setting of images on left of screen
         img1 = findViewById(R.id.mascotte1);
         img1.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
@@ -248,7 +250,8 @@ public class MapActivity extends AppCompatActivity implements
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
-        // Start services
+        // Start communication between map and MascotMQTT via intents
+
         try {
             Intent intent = new Intent(MapActivity.this, MascotMQTT.class);
             startService(intent);
@@ -396,11 +399,14 @@ public class MapActivity extends AppCompatActivity implements
         }
     }
 
+    //Handle incoming MQTT messages given my MascotMQTT and IMQTT interface
     @Override
     public void onMessageArrived(String message) {
         Log.d("MQTT", "Message received by MapActivity");
         try {
             JSONObject jsonObject = new JSONObject(message);
+
+            //Receiving coordinates
             if (jsonObject.has("Coordinaat"))
             {
                 Log.d("MQTT", "Type received: Coordinaat");
@@ -415,6 +421,7 @@ public class MapActivity extends AppCompatActivity implements
                 Log.d("MQTT", "Handled Coordinaat for mascot " + id);
 
             }
+            //Receiving a button press
             else if (jsonObject.has("Mascotte")) {
                 Log.d("MQTT", "Type received: Mascotteknop");
                 String id = jsonObject.getJSONObject("Mascotte").getString("id");

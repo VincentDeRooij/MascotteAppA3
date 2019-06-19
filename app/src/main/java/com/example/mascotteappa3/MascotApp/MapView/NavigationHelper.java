@@ -17,6 +17,7 @@ public class NavigationHelper {
 
     }
 
+    //Options for hamburger menu
     public Intent onNavigationItemSelected(@NonNull MenuItem menuItem, AppCompatActivity activity) {
         Intent intent = null;
         if(menuItem.getItemId() == R.id.nav_item_map) {

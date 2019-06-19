@@ -2,7 +2,6 @@ package com.example.mascotteappa3.MascotApp.MapView;
 
 class GPSCoordinate {
 
-    //Todo: Make sure cooridnates are suitable for mapbox
     private double latitude;
     private double longitude;
 
@@ -11,6 +10,7 @@ class GPSCoordinate {
         this.longitude = GPSConverter(longitude);
     }
 
+    //Method for converting NMEA GPS coordinates to those used by MapBox
     private double GPSConverter(double number) {
         String numberString = number + "";
 

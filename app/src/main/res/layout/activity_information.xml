@@ -16,9 +16,9 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="Welkom bij Mascottefinder, deze app zal je helpen met het vinden van elke mascotte in het park. Met de ingebouwde camera functie kan je samen met al je favoriete mascotte's een foto maken.
-Welke mascotte je wil vinden kun je selecteren op het scherm aan de linker kant, deze mascotte zullen dan op de kaart met een gekleurd icoontje getoond worden.
-Als je een foto neemt wordt deze opgeslagen in de galerij. Nadat je al de mascotte in het park hebt gevonden kun je bij de balie bij de ingang een prijs ophalen."
+        android:text="Welkom bij Mascottefinder. Deze app zal je helpen met het vinden van elke mascotte in het park. Met de ingebouwde camera functie kan je samen met al je favoriete mascotte's een foto maken.
+Welke mascotte je wil vinden kun je selecteren op het hoofdscherm aan de linker kant. Deze mascottes zullen dan op de kaart met een gekleurd icoontje getoond worden. Vind de knoppen in het park om hun locatie up te daten.
+Wanneer je een foto neemt wordt deze opgeslagen in de galerij. Nadat je al de mascottes in het park hebt gevonden kun je bij de balie bij de ingang een prijs ophalen."
         android:textAlignment="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

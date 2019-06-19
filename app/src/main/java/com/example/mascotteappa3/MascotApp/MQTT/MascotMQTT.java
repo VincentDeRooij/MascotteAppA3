@@ -40,6 +40,7 @@ public class MascotMQTT {
         this.listener = listener;
     }
 
+    //Connects to host as given in class variables
     public void connect() {
         try {
             IMqttToken token = client.connect(options);
@@ -68,6 +69,7 @@ public class MascotMQTT {
                 isConnected = false;
             }
 
+            //Handles arriving messages and sends to listener
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
                 String text = new String(message.getPayload());
