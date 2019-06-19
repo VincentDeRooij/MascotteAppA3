@@ -126,14 +126,15 @@ public class MapActivity extends AppCompatActivity implements
     private Context mContext; // necessary for the GPS tracker to function
 
 
-    public Map<String,GPSCoordinate> lastCoordinates;
+    public Map<String,GPSCoordinate> lastCoordinates = new HashMap<>();
+    public Map<String,GeoJsonSource> mapMarkers = new HashMap<>();
+
+
     private Button reconnectButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        lastCoordinates = new HashMap<>();
 
         String clientId = MqttClient.generateClientId();
         MascotMQTT mascotMQTT = new MascotMQTT(this, this, clientId, this);
@@ -301,9 +302,13 @@ public class MapActivity extends AppCompatActivity implements
 
                         //sourceGreen.setGeoJson(Point.fromLngLat(4.791761, 51.585800));
                         updateMarkerPosition(4.791961, 51.585800, sourceBlue);
+                        mapMarkers.put("1",sourceBlue);
                         updateMarkerPosition(4.791761, 51.586800, sourceRed);
+                        mapMarkers.put("2",sourceRed);
                         updateMarkerPosition(4.791661, 51.586600, sourceYellow);
+                        mapMarkers.put("3",sourceYellow);
                         updateMarkerPosition(4.791861, 51.586800, sourceGreen);
+                        mapMarkers.put("4",sourceGreen);
                         //updateMarkerPosition(4.791761, 51.587800, sourceBlue);
 
 
@@ -391,36 +396,29 @@ public class MapActivity extends AppCompatActivity implements
 
     @Override
     public void onMessageArrived(String message) {
-
+        Log.d("MQTT", "Message received by MapActivity");
         try {
             JSONObject jsonObject = new JSONObject(message);
             if (jsonObject.has("Coordinaat"))
             {
-                Log.d("Type received", "Coordinaat");
+                Log.d("MQTT", "Type received: Coordinaat");
                 String id = jsonObject.getJSONObject("Coordinaat").getString("id");
                 double latitude = jsonObject.getJSONObject("Coordinaat").getDouble("latitude");
                 double longitude = jsonObject.getJSONObject("Coordinaat").getDouble("longitude");
-
-                //Application crash on this line -- do not know why ;(
-                //lastCoordinates.put(id,new GPSCoordinate(latitude,longitude));
-
-                //This is the tamp fix until the we figure out how to work with the lastCoordinates variable.
-
-
-                GPSCoordinate gpsCoordinate = new GPSCoordinate(latitude, longitude);
-                Log.d("Lat", gpsCoordinate.getLatitude() + "");
-                Log.d("Long", gpsCoordinate.getLongitude() + "");
+                lastCoordinates.put(id,new GPSCoordinate(latitude,longitude));
+                /*GPSCoordinate gpsCoordinate = new GPSCoordinate(latitude, longitude);
+                Log.d("Latitude", gpsCoordinate.getLatitude() + "");
+                Log.d("Longitude", gpsCoordinate.getLongitude() + "");*/
                 //Use the GPSCoordinate class because the conversion of lat and long happens inside the constructor.
-                updateMarkerPosition(gpsCoordinate.getLongitude(), gpsCoordinate.getLatitude(), sourceBlue);
+                Log.d("MQTT", "Handled Coordinaat for mascot " + id);
+
             }
             else if (jsonObject.has("Mascotte")) {
-                Log.d("Type received", "Mascotteknop");
+                Log.d("MQTT", "Type received: Mascotteknop");
                 String id = jsonObject.getJSONObject("Mascotte").getString("id");
                 if (lastCoordinates.containsKey(id)) {
-                    //Todo: Handle press of button for "id"
-
-                    Log.d("Handled received", "Mascotteknop");
-
+                    updateMarkerPosition(lastCoordinates.get(id).getLongitude(), lastCoordinates.get(id).getLatitude(), mapMarkers.get(id));
+                    Log.d("MQTT", "Handled Mascotteknop for mascot  " + id);
                     lastCoordinates.remove(id);
                 }
             }
