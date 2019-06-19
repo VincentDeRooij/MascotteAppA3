@@ -31,6 +31,7 @@ import android.widget.Button;
 
 import android.widget.Toast;
 
+import com.example.mascotteappa3.MascotApp.MQTT.IMQTT;
 import com.example.mascotteappa3.MascotApp.MQTT.MascotMQTT;
 import com.example.mascotteappa3.MascotApp.Sensors.GPSTracker;
 import com.example.mascotteappa3.R;
@@ -73,6 +74,7 @@ import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -83,11 +85,8 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconSize;
 public class MapActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         OnMapReadyCallback,
-        PermissionsListener {
-
-    private MyBroadcastReceiver myBroadCastReceiver;
-    static final String BROADCAST_ACTION = "com.example.mascotteappa3.mqttpayloadavailabe";
-
+        PermissionsListener,
+        IMQTT {
 
     private MapView mapView;
     private MapboxMap mapboxMap;
@@ -134,8 +133,10 @@ public class MapActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        lastCoordinates = new HashMap<>();
+
         String clientId = MqttClient.generateClientId();
-        MascotMQTT mascotMQTT = new MascotMQTT(this, this, clientId);
+        MascotMQTT mascotMQTT = new MascotMQTT(this, this, clientId, this);
         mascotMQTT.connect();
 
         // This till
@@ -244,22 +245,6 @@ public class MapActivity extends AppCompatActivity implements
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
-        // Setup Broadcast receiver
-        myBroadCastReceiver = new MyBroadcastReceiver();
-
-        // Start Broadcast receiver
-        try
-        {
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(BROADCAST_ACTION);
-            registerReceiver(myBroadCastReceiver, intentFilter);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-
         // Start services
         try {
             Intent intent = new Intent(MapActivity.this, MascotMQTT.class);
@@ -327,6 +312,7 @@ public class MapActivity extends AppCompatActivity implements
     }
 
     private void updateMarkerPosition(double longitude, double latitude, GeoJsonSource source) {
+        Log.d("Marker update", "New marker location");
         source.setGeoJson(Point.fromLngLat(longitude, latitude));
     }
 
@@ -400,6 +386,46 @@ public class MapActivity extends AppCompatActivity implements
         } else {
             Toast.makeText(this, R.string.location_explanation, Toast.LENGTH_LONG).show();
             finish();
+        }
+    }
+
+    @Override
+    public void onMessageArrived(String message) {
+
+        try {
+            JSONObject jsonObject = new JSONObject(message);
+            if (jsonObject.has("Coordinaat"))
+            {
+                Log.d("Type received", "Coordinaat");
+                String id = jsonObject.getJSONObject("Coordinaat").getString("id");
+                double latitude = jsonObject.getJSONObject("Coordinaat").getDouble("latitude");
+                double longitude = jsonObject.getJSONObject("Coordinaat").getDouble("longitude");
+
+                //Application crash on this line -- do not know why ;(
+                //lastCoordinates.put(id,new GPSCoordinate(latitude,longitude));
+
+                //This is the tamp fix until the we figure out how to work with the lastCoordinates variable.
+
+
+                GPSCoordinate gpsCoordinate = new GPSCoordinate(latitude, longitude);
+                Log.d("Lat", gpsCoordinate.getLatitude() + "");
+                Log.d("Long", gpsCoordinate.getLongitude() + "");
+                //Use the GPSCoordinate class because the conversion of lat and long happens inside the constructor.
+                updateMarkerPosition(gpsCoordinate.getLongitude(), gpsCoordinate.getLatitude(), sourceBlue);
+            }
+            else if (jsonObject.has("Mascotte")) {
+                Log.d("Type received", "Mascotteknop");
+                String id = jsonObject.getJSONObject("Mascotte").getString("id");
+                if (lastCoordinates.containsKey(id)) {
+                    //Todo: Handle press of button for "id"
+
+                    Log.d("Handled received", "Mascotteknop");
+
+                    lastCoordinates.remove(id);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
@@ -492,9 +518,7 @@ public class MapActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(myBroadCastReceiver);
         mapView.onDestroy();
-
     }
 
     @Override
@@ -535,49 +559,4 @@ public class MapActivity extends AppCompatActivity implements
         startActivity(intent);
         return true;
     }
-
-    // Defineer een eigen broadcast receiver, deze vangt alles op voor
-    public class MyBroadcastReceiver extends BroadcastReceiver {
-
-        private final String TAG = "MyBroadcastReceiver";
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            try
-            {
-                String payload = intent.getStringExtra("payload");
-                Log.i(TAG,  payload);
-
-                try {
-                    JSONObject jsonObject = new JSONObject(payload);
-                    if (jsonObject.has("Coordinaat"))
-                    {
-                        Log.d("Type received", "Coordinaat");
-                        String id = jsonObject.getJSONObject("Coordinaat").getString("id");
-                        double latitude = jsonObject.getJSONObject("Coordinaat").getDouble("latitude");
-                        double longitude = jsonObject.getJSONObject("Coordinaat").getDouble("longitude");
-                        lastCoordinates.put(id,new GPSCoordinate(latitude,longitude));
-                    }
-                    else if (jsonObject.has("Mascotte")) {
-                        Log.d("Type received", "Mascotteknop");
-                        String id = jsonObject.getJSONObject("Mascotte").getString("id");
-                        if (lastCoordinates.containsKey(id)) {
-                            //Todo: Handle press of button for "id"
-
-                            Log.d("Handled received", "Mascotteknop");
-
-                            lastCoordinates.remove(id);
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            } catch (Exception ex)
-            {
-                ex.printStackTrace();
-            }
-        }
-    }
-
 }

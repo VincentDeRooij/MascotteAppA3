@@ -27,14 +27,17 @@ public class MascotMQTT {
 
     private MqttConnectOptions options;
     private MqttAndroidClient client;
+    private IMQTT listener;
 
-    public MascotMQTT(AppCompatActivity activity, Context context, String clientId) {
+    public MascotMQTT(AppCompatActivity activity, Context context, String clientId, IMQTT listener) {
         this.activity = activity;
         client = new MqttAndroidClient(context, MQTTHOST, clientId);
 
         options = new MqttConnectOptions();
         options.setUserName(USERNAME);
         options.setPassword(PASSWORD.toCharArray());
+
+        this.listener = listener;
     }
 
     public void connect() {
@@ -68,7 +71,7 @@ public class MascotMQTT {
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
                 String text = new String(message.getPayload());
-                Toast.makeText(activity, text, Toast.LENGTH_LONG).show();
+                listener.onMessageArrived(text);
             }
 
             @Override

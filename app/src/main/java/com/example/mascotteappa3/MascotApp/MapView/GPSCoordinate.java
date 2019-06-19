@@ -6,12 +6,12 @@ class GPSCoordinate {
     private double latitude;
     private double longitude;
 
-    public void GPSCoordinate(double latitude, double longitude) {
+    public GPSCoordinate(double latitude, double longitude) {
         this.latitude = GPSConverter(latitude);
         this.longitude = GPSConverter(longitude);
     }
 
-    public static double GPSConverter(double number) {
+    private double GPSConverter(double number) {
         String numberString = number + "";
 
         String[] latStringSplit = numberString.split("\\.");
@@ -37,7 +37,7 @@ class GPSCoordinate {
         return defNumber;
     }
 
-    public static double doCalculations(int firstNumber, int secondNumber, double numberAfterComma) {
+    private double doCalculations(int firstNumber, int secondNumber, double numberAfterComma) {
 
         double tempNumber = secondNumber * 60 + numberAfterComma;
 
@@ -49,7 +49,7 @@ class GPSCoordinate {
         return defNumber;
     }
 
-    public static double secondNumberWithInt(String strNumber) {
+    private double secondNumberWithInt(String strNumber) {
         double defNumber = 0.0;
 
         if(strNumber.length() > 3) {
