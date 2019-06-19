@@ -139,8 +139,7 @@ void loop() // run over and over again
       mqttClient.loop();
     }
   
-    // Publish payload is BTN is pressed
-   
+//Publish last found GPS coordinate   
       mqtt_publish(
         "2", // id String
        GPS.latitude, // latitude value

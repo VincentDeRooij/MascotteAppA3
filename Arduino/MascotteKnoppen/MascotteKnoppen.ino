@@ -32,7 +32,7 @@ const char* username = "scolijn3  @avans.nl";
 const char *password = "";
 
 const char* mqtt_broker   = "51.254.217.43";
-const char* mqtt_topic    = "TI-14-2019/A3/MascotteKnoppen";
+const char* mqtt_topic    = "TI-14-2019/A3/GPSCoordinaten";
 const char* mqtt_username = "emon";
 const char* mqtt_password = "uw2ELjAKrEUwqgLT";
 
@@ -52,17 +52,6 @@ void setup(){
    Serial.begin(115200);
   pinMode(buttonpin1, INPUT);
   pinMode(buttonpin2, INPUT);
-
-/* 
-short:      ESP8266 (Arduino) setup
-inputs:        
-outputs: 
-notes:         
-Version :   DMK, Initial code
-*******************************************************************/
-
-
-
   Serial.begin(115200);
   WiFi.disconnect(true);  //disconnect form wifi to set new wifi connection
   WiFi.mode(WIFI_STA); //init wifi mode
@@ -85,13 +74,14 @@ void loop(){
   buttonState1 = digitalRead(buttonpin1); 
   buttonState2 = digitalRead(buttonpin2); 
 
+//Check if connected, otherwise reiterate
     if( !mqttClient.connected() ) {
       mqtt_connect();
     } else {
       mqttClient.loop();
     }
 
-
+//Check for buttons pressed- if for the first time, send press via MQTT
   if(buttonState1 == HIGH && button1){
     Serial.println("1"); 
     //buttonState1 = LOW;
@@ -114,24 +104,7 @@ void loop(){
   }
    
 
-/* 
-short:    ESP8266 (Arduino) main loop
-inputs:   
-outputs: 
-notes:    
-Version:  DMK, Initial code
-*******************************************************************/
-
   if (WiFi.status() == WL_CONNECTED) {
-    
-    if( !mqttClient.connected() ) {
-      mqtt_connect();
-    } else {
-      mqttClient.loop();
-    }
-  
-    // Publish payload is BTN is pressed
-   
     
       delay(200);
     
@@ -142,15 +115,8 @@ Version:  DMK, Initial code
   }
 }
 
-/******************************************************************/
+
 void mqtt_connect() 
-/* 
-short:      Connect to MQTT server UNSECURE
-inputs:        
-outputs: 
-notes:         
-Version :   DMK, Initial code
-*******************************************************************/
 {  
   mqttClient.setClient(wifiClient);
   mqttClient.setServer(mqtt_broker, 1883);
