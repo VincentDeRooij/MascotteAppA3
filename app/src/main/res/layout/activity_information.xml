@@ -10,8 +10,8 @@
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="280dp"
-        android:layout_height="404dp"
+        android:layout_width="387dp"
+        android:layout_height="552dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
@@ -20,6 +20,7 @@
 Welke mascotte je wil vinden kun je selecteren op het hoofdscherm aan de linker kant. Deze mascottes zullen dan op de kaart met een gekleurd icoontje getoond worden. Vind de knoppen in het park om hun locatie up te daten.
 Wanneer je een foto neemt wordt deze opgeslagen in de galerij. Nadat je al de mascottes in het park hebt gevonden kun je bij de balie bij de ingang een prijs ophalen."
         android:textAlignment="center"
+        android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
