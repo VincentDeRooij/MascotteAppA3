@@ -10,14 +10,14 @@ import com.example.mascotteappa3.MascotApp.Sensors.GPSTracker;
 import com.example.mascotteappa3.MascotApp.Camera.CameraActivity;
 import com.example.mascotteappa3.R;
 
-public class NavigationHelper {
+public class NavigationHelper { // handler class for the sideBar in the app
     private static NavigationHelper instance;
 
     private NavigationHelper() {
 
     }
 
-    //Options for hamburger menu
+    // menu selector, this method handles the menu selecting and starts up a new intent
     public Intent onNavigationItemSelected(@NonNull MenuItem menuItem, AppCompatActivity activity) {
         Intent intent = null;
         if(menuItem.getItemId() == R.id.nav_item_map) {

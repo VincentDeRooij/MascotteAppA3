@@ -28,15 +28,15 @@ import static android.os.Environment.getExternalStoragePublicDirectory;
 
 public class CameraActivity extends AppCompatActivity {
 
-    Button btnTakePic;
-    ImageView imageView;
-    ImageView imageView1;
-    ImageView imageView2;
-    ImageView imageView3;
-    String pathToFile;
-    Integer count;
+    Button btnTakePic; // button that takes the user to the cameraApp
+    ImageView imageView; // imageView
+    ImageView imageView1; // imageView
+    ImageView imageView2; // imageView
+    ImageView imageView3;// imageView
+    String pathToFile; // pathname to the picture file
+    Integer count; // amount of pictures taken
     boolean started = true;
-    Bitmap bitmap;
+    Bitmap bitmap; // picture bitmap
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +51,7 @@ public class CameraActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 dispatchPictureTakerAction();
+                //takes a picture
             }
         });
         if(!SaveImages.getInstance().isHasImage()){
@@ -78,6 +79,7 @@ public class CameraActivity extends AppCompatActivity {
         }
     }
 
+    // saves the picture taken to the gallery location
     private void galleryAddPic() {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         File f = new File(pathToFile);
@@ -87,6 +89,7 @@ public class CameraActivity extends AppCompatActivity {
     }
 
 
+    // sets the imageView with the picture taken
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -98,6 +101,7 @@ public class CameraActivity extends AppCompatActivity {
         }
     }
 
+    // handles the picture conversion and saving
     private void dispatchPictureTakerAction() {
         Intent takePic = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if(takePic.resolveActivity(getPackageManager()) != null){
@@ -113,6 +117,7 @@ public class CameraActivity extends AppCompatActivity {
         }
     }
 
+    // creates the photo file name
     private File creatPhotoFile() {
         String name = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File storageDir = getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
@@ -126,12 +131,13 @@ public class CameraActivity extends AppCompatActivity {
         return image;
     }
 
+    // fills the imageViews
     private void setImageView(Bitmap bitmap){
         if(count == 0){
             SaveImages.getInstance().setBitmap(bitmap);
             imageView.setImageBitmap(bitmap);
             galleryAddPic();
-                count++;
+            count++;
         }else if(count == 1){
             SaveImages.getInstance().setBitmap1(bitmap);
             imageView1.setImageBitmap(bitmap);

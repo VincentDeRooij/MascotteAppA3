@@ -13,9 +13,11 @@ public class SaveImages {
     private Bitmap bitmap3;
     private Integer count;
 
+    // gets the amount of pictures taken, max of 4 can be displayed
     public Integer getCount() {
         return count;
     }
+
 
     public void setCount(Integer count) {
         this.count = count;
@@ -61,6 +63,7 @@ public class SaveImages {
         this.hasImage = hasImage;
     }
 
+    // saves the image if the image taken doesn't exist yet
     public static SaveImages getInstance(){
         if(instance == null){
             instance = new SaveImages();

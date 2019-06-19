@@ -1,16 +1,18 @@
 package com.example.mascotteappa3.MascotApp.MapView;
 
 class GPSCoordinate {
+    // this class handles the GPS data and converts it to a longitude and latitude
 
     private double latitude;
     private double longitude;
+
 
     public GPSCoordinate(double latitude, double longitude) {
         this.latitude = GPSConverter(latitude);
         this.longitude = GPSConverter(longitude);
     }
 
-    //Method for converting NMEA GPS coordinates to those used by MapBox
+    // method for converting NMEA GPs coordinates to those used by Mapbox
     private double GPSConverter(double number) {
         String numberString = number + "";
 

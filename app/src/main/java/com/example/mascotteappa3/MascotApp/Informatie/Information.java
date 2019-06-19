@@ -11,6 +11,7 @@ import com.example.mascotteappa3.R;
 
 public class Information extends AppCompatActivity {
 
+    // this class handles the informationView, which displays the information about the app and its instructions
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

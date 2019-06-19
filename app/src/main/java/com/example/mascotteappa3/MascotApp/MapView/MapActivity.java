@@ -90,8 +90,8 @@ public class MapActivity extends AppCompatActivity implements
         PermissionsListener,
         IMQTT {
 
-    private MapView mapView;
-    private MapboxMap mapboxMap;
+    private MapView mapView; // mapView of the layout
+    private MapboxMap mapboxMap; //Mapbox
 
     private DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
@@ -106,16 +106,7 @@ public class MapActivity extends AppCompatActivity implements
     private boolean groen = true;
     private boolean geel = true;
 
-    private SymbolLayer symbolBlue;
-    private SymbolLayer symbolRed;
-    private SymbolLayer symbolYellow;
-    private SymbolLayer symbolGreen;
-
-    private GeoJsonSource sourceBlue;
-    private GeoJsonSource sourceRed;
-    private GeoJsonSource sourceYellow;
-    private GeoJsonSource sourceGreen;
-
+    // handles the permissions which needs user input
     private PermissionsManager permissionsManager;
     // Variables needed to add the location engine
     private LocationEngine locationEngine;
@@ -124,35 +115,48 @@ public class MapActivity extends AppCompatActivity implements
     // Variables needed to listen to location updates
     private MainActivityLocationCallback callback = new MainActivityLocationCallback(this);
 
+    // Variables for the GPS tracker
     private GPSTracker gps = new GPSTracker();
     private Context mContext; // necessary for the GPS tracker to function
-
-
-    //Variables used for saving and putting GPS coordinates to the right map marker
     public Map<String,GPSCoordinate> lastCoordinates = new HashMap<>();
+
+    // Variables for the Markers
     public Map<String,GeoJsonSource> mapMarkers = new HashMap<>();
+    // SymbolLayers, to be able to change certain values
+    private SymbolLayer symbolBlue;
+    private SymbolLayer symbolRed;
+    private SymbolLayer symbolYellow;
+    private SymbolLayer symbolGreen;
+    // GeoJsonSource, responsible for updating the markers on the mapbox
+    private GeoJsonSource sourceBlue;
+    private GeoJsonSource sourceRed;
+    private GeoJsonSource sourceYellow;
+    private GeoJsonSource sourceGreen;
 
-
+    // Mqtt Variable
     private Button reconnectButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //Starts MQTT program
+        // instance to start the Mqtt client and its connection
         String clientId = MqttClient.generateClientId();
         MascotMQTT mascotMQTT = new MascotMQTT(this, this, clientId, this);
         mascotMQTT.connect();
 
+        // Starting up the integrated GPS location data caller
+        // This is necessary for the built-in GPS to function properly
         mContext = this;
         Log.d("Main", "Main started");
+        // checks if permission is granted
         if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MapActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 
+            // if no permission is granted
         } else {
             Toast.makeText(mContext,"You need have granted permission",Toast.LENGTH_SHORT).show();
             gps = new GPSTracker(mContext, MapActivity.this);
-
 
             // Check if GPS enabled
             if (gps.canGetLocation()) {
@@ -170,14 +174,15 @@ public class MapActivity extends AppCompatActivity implements
             }
         }
 
-
-        // This is necessary for the built-in GPS to function properly
+        // initialize of the mapbox ID, this is done via internet
+        // a serial-key is bound by account
 
         Mapbox.getInstance(this, getString(R.string.acces_token));
 
+        // setting the contentView to display the mapView
         setContentView(R.layout.activity_map);
 
-        //Setting of images on left of screen
+        // inits for the side mascot toggle buttons
         img1 = findViewById(R.id.mascotte1);
         img1.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
@@ -228,11 +233,13 @@ public class MapActivity extends AppCompatActivity implements
             }
         });
 
+        // insert images into the buttons
         img1.setImageResource(R.drawable.mascotterood);
         img2.setImageResource(R.drawable.mascotteblauw);
         img3.setImageResource(R.drawable.mascottegroen);
         img4.setImageResource(R.drawable.mascottegeel);
 
+        // top toolbar for accessing the menu
         Toolbar toolbar = findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
 
@@ -243,15 +250,17 @@ public class MapActivity extends AppCompatActivity implements
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
+        // init of the NavigationView
+        // navigationView is the sideBar on the left side of the mapBox
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // setting up the mapView
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
-        // Start communication between map and MascotMQTT via intents
-
+        // Start services of the Mqtt
         try {
             Intent intent = new Intent(MapActivity.this, MascotMQTT.class);
             startService(intent);
@@ -260,12 +269,15 @@ public class MapActivity extends AppCompatActivity implements
         }
     }
 
+    // Executes on the mapView.getMapAsync method, this can only be done if the other steps are correctly executed
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
-        this.mapboxMap = mapboxMap;
+        this.mapboxMap = mapboxMap; // selecting mapBox
 
+        // creating ArrayList, this list is not used directly, but purely for the setup of the markers
         ArrayList<Feature> symbolLayerIconFeatureList = new ArrayList<>();
 
+        // setting up the blue, red, yellow and green markers
         mapboxMap.setStyle(new Style.Builder().fromUrl("mapbox://styles/vwjapderooij/cjvqha9wx0t8w1co93osiftuh?optimize=true")
                         .withImage("MascotteBlue", BitmapFactory.decodeResource(MapActivity.this.getResources(), R.drawable.mascotteblauw)) // init of the blue mascot tracker
                         .withSource(sourceBlue = new GeoJsonSource("MascotteBlueSource", FeatureCollection.fromFeatures(symbolLayerIconFeatureList)))
@@ -276,6 +288,7 @@ public class MapActivity extends AppCompatActivity implements
                         .withImage("MascotteGreen", BitmapFactory.decodeResource(MapActivity.this.getResources(), R.drawable.mascottegroen)) // init of the green mascot tracker
                         .withSource(sourceGreen = new GeoJsonSource("MascotteGreenSource", FeatureCollection.fromFeatures(symbolLayerIconFeatureList)))
 
+                        // giving each marker a different layer
                         .withLayer(symbolBlue = new SymbolLayer("Mascotte-BlueLayer", "MascotteBlueSource") // loading of the Blue Mascot TrackerIcon
                                 .withProperties(PropertyFactory.iconImage("MascotteBlue"),
                                         iconAllowOverlap(true),
@@ -300,27 +313,27 @@ public class MapActivity extends AppCompatActivity implements
                                         iconOffset(new Float[]{0f, 0f}),
                                         iconSize(0.09f))
                         )
+                // style ready and can be changed for further uses
                 , new Style.OnStyleLoaded() {
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
                         enableLocationComponent(style);
 
-                        //sourceGreen.setGeoJson(Point.fromLngLat(4.791761, 51.585800));
+                        // setting start positions of the 4 markers
+                        // sourceGreen.setGeoJson(Point.fromLngLat(4.791761, 51.585800));
                         updateMarkerPosition(4.791961, 51.585800, sourceBlue);
-                        mapMarkers.put("1",sourceBlue);
+                        mapMarkers.put("1",sourceBlue); // using this to bind unique id to the individual markers
                         updateMarkerPosition(4.791761, 51.586800, sourceRed);
                         mapMarkers.put("2",sourceRed);
                         updateMarkerPosition(4.791661, 51.586600, sourceYellow);
                         mapMarkers.put("3",sourceYellow);
                         updateMarkerPosition(4.791861, 51.586800, sourceGreen);
                         mapMarkers.put("4",sourceGreen);
-                        //updateMarkerPosition(4.791761, 51.587800, sourceBlue);
-
-
                     }
                 });
     }
 
+    // updates the position of a given marker on the map
     private void updateMarkerPosition(double longitude, double latitude, GeoJsonSource source) {
         Log.d("Marker update", "New marker location");
         source.setGeoJson(Point.fromLngLat(longitude, latitude));
@@ -387,6 +400,7 @@ public class MapActivity extends AppCompatActivity implements
         Toast.makeText(this, R.string.location_explanation, Toast.LENGTH_LONG).show();
     }
 
+    // if permission is granted the map shows the location of the user, compass view
     @Override
     public void onPermissionResult(boolean granted) {
         if (granted) {
@@ -399,14 +413,13 @@ public class MapActivity extends AppCompatActivity implements
         }
     }
 
-    //Handle incoming MQTT messages given my MascotMQTT and IMQTT interface
+    // method to read and check if the Mqtt data has been received
+    // this is executed if the Mqtt server sends the data to the client
     @Override
     public void onMessageArrived(String message) {
         Log.d("MQTT", "Message received by MapActivity");
         try {
             JSONObject jsonObject = new JSONObject(message);
-
-            //Receiving coordinates
             if (jsonObject.has("Coordinaat"))
             {
                 Log.d("MQTT", "Type received: Coordinaat");
@@ -421,7 +434,6 @@ public class MapActivity extends AppCompatActivity implements
                 Log.d("MQTT", "Handled Coordinaat for mascot " + id);
 
             }
-            //Receiving a button press
             else if (jsonObject.has("Mascotte")) {
                 Log.d("MQTT", "Type received: Mascotteknop");
                 String id = jsonObject.getJSONObject("Mascotte").getString("id");
@@ -429,6 +441,7 @@ public class MapActivity extends AppCompatActivity implements
                     updateMarkerPosition(lastCoordinates.get(id).getLongitude(), lastCoordinates.get(id).getLatitude(), mapMarkers.get(id));
                     Log.d("MQTT", "Handled Mascotteknop for mascot  " + id);
                     lastCoordinates.remove(id);
+                    // vibration feedback to let the user know the location is updated
                     Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                     v.vibrate(VibrationEffect.createOneShot(200,VibrationEffect.DEFAULT_AMPLITUDE));
                 }
@@ -438,6 +451,7 @@ public class MapActivity extends AppCompatActivity implements
         }
     }
 
+    // callBack to ensure constant location update for the App-user 's integrated GPS sensor
     private static class MainActivityLocationCallback
             implements LocationEngineCallback<LocationEngineResult> {
 
@@ -536,7 +550,7 @@ public class MapActivity extends AppCompatActivity implements
         mapView.onSaveInstanceState(outState);
     }
 
-    //All methods for menu.
+    //All methods for menu/sideBar
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
