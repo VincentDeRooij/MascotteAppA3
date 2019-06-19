@@ -12,6 +12,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -420,6 +422,8 @@ public class MapActivity extends AppCompatActivity implements
                     updateMarkerPosition(lastCoordinates.get(id).getLongitude(), lastCoordinates.get(id).getLatitude(), mapMarkers.get(id));
                     Log.d("MQTT", "Handled Mascotteknop for mascot  " + id);
                     lastCoordinates.remove(id);
+                    Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                    v.vibrate(VibrationEffect.createOneShot(200,VibrationEffect.DEFAULT_AMPLITUDE));
                 }
             }
         } catch (JSONException e) {
