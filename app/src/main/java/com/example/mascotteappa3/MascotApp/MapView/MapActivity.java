@@ -189,10 +189,12 @@ public class MapActivity extends AppCompatActivity implements
                 rood = !rood;
                 if(rood) {
                     img1.setImageResource(R.drawable.mascotterood);
+                    symbolRed.setProperties(PropertyFactory.iconImage("MascotteRed"));
                 }
                 else{
-
                     img1.setImageResource(R.drawable.mascotteg);
+                    symbolRed.setProperties(PropertyFactory.iconImage("MascotteGrey"));
+
                 }
             }
         });
@@ -202,9 +204,11 @@ public class MapActivity extends AppCompatActivity implements
                 blauw = !blauw;
                 if(blauw) {
                     img2.setImageResource(R.drawable.mascotteblauw);
+                    symbolBlue.setProperties(PropertyFactory.iconImage("MascotteBlue"));
                 }
                 else{
                     img2.setImageResource(R.drawable.mascotteg);
+                    symbolBlue.setProperties(PropertyFactory.iconImage("MascotteGrey"));
                 }
             }
         });
@@ -214,9 +218,11 @@ public class MapActivity extends AppCompatActivity implements
                 groen = !groen;
                 if(groen) {
                     img3.setImageResource(R.drawable.mascottegroen);
+                    symbolGreen.setProperties(PropertyFactory.iconImage("MascotteGreen"));
                 }
                 else{
                     img3.setImageResource(R.drawable.mascotteg);
+                    symbolGreen.setProperties(PropertyFactory.iconImage("MascotteGrey"));
                 }
             }
         });
@@ -226,9 +232,11 @@ public class MapActivity extends AppCompatActivity implements
                 geel = !geel;
                 if(geel) {
                     img4.setImageResource(R.drawable.mascottegeel);
+                    symbolYellow.setProperties(PropertyFactory.iconImage("MascotteYellow"));
                 }
                 else{
                     img4.setImageResource(R.drawable.mascotteg);
+                    symbolYellow.setProperties(PropertyFactory.iconImage("MascotteGrey"));
                 }
             }
         });
@@ -287,6 +295,7 @@ public class MapActivity extends AppCompatActivity implements
                         .withSource(sourceYellow = new GeoJsonSource("MascotteYellowSource", FeatureCollection.fromFeatures(symbolLayerIconFeatureList)))
                         .withImage("MascotteGreen", BitmapFactory.decodeResource(MapActivity.this.getResources(), R.drawable.mascottegroen)) // init of the green mascot tracker
                         .withSource(sourceGreen = new GeoJsonSource("MascotteGreenSource", FeatureCollection.fromFeatures(symbolLayerIconFeatureList)))
+                        .withImage("MascotteGrey", BitmapFactory.decodeResource(MapActivity.this.getResources(), R.drawable.mascotteg))
 
                         // giving each marker a different layer
                         .withLayer(symbolBlue = new SymbolLayer("Mascotte-BlueLayer", "MascotteBlueSource") // loading of the Blue Mascot TrackerIcon
